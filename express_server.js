@@ -14,6 +14,11 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+app.get("/urls/:id", (req, res) => {
+  const templateVars = { id: req.params.id, longURL: "http://localhost:8080/urls/b2xVn2" };
+  res.render("urls_show", templateVars);
+});
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
