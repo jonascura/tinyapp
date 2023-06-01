@@ -39,7 +39,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// redirect request
+// READ: request
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
   res.redirect(longURL);
@@ -71,9 +71,15 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/:id`);
 });
 
+// DELETE: url entry
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
+});
+
+// EDIT: url entry
+app.post("/urls/:id/edit", (req, res) => {
+  res.redirect(`/urls/${req.params.id}`);
 });
 
 app.listen(PORT, () => {
