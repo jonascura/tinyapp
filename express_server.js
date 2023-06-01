@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 
 // constants
 const app = express();
@@ -12,6 +13,7 @@ app.set("view engine", "ejs");
 // middleware
 app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 function generateRandomString() {
   let result = '';
@@ -30,7 +32,10 @@ const urlDatabase = {
 
 // CREATE: urls page
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -74,7 +79,7 @@ app.post("/urls", (req, res) => {
   const newStr = generateRandomString();
   urlDatabase[newStr] = newURL;
 
-  res.redirect(`/urls/${req.params.id}`);
+  res.redirect(`/urls/${newStr}`);
 });
 
 // DELETE: url entry
@@ -102,6 +107,7 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username;
   res.cookie("user", username);
+  console.log(req.cookies);
   res.redirect("/urls");
 });
 
