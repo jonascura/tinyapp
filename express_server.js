@@ -110,11 +110,18 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
-// CREATE: login
+// SAVE: login
 app.post("/login", (req, res) => {
   const username = req.body.username;
   res.cookie("username", username);
   console.log(req.cookies);
+  res.redirect("/urls");
+});
+
+// DELETE: login (logout)
+app.post("/logout", (req, res) => {
+  const username = req.body.username;
+  res.clearCookie('username', username);
   res.redirect("/urls");
 });
 
