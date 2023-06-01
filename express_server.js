@@ -11,9 +11,9 @@ function generateRandomString() {
     result += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return result;
-}
+};
 
-console.log(generateRandomString());
+// console.log(generateRandomString());
 
 app.set("view engine", "ejs");
 
@@ -24,35 +24,55 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// render urks page
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
+// render new page
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+// show individual id
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: "http://localhost:8080/urls/b2xVn2" };
   res.render("urls_show", templateVars);
 });
 
+// redirect request
+app.get("/u/:id", (req, res) => {
+  const longURL = generateRandomString();
+  res.redirect(longURL);
+});
+
+// homepage
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// show urls as json string
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// show hello words with bolded html
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// SAVE: create TinyURL
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const body = req.body;
+  console.log(body); // Log the POST request body to the console
+  const newURL = body.longURL;
+  const newStr = generateRandomString();
+  urlDatabase[newStr] = newURL;
+
+  console.log("updated urls:", urlDatabase);
+
+  res.redirect(`/urls/:id`);
 });
 
 app.listen(PORT, () => {
