@@ -68,9 +68,12 @@ app.post("/urls", (req, res) => {
   const newStr = generateRandomString();
   urlDatabase[newStr] = newURL;
 
-  console.log("updated urls:", urlDatabase);
-
   res.redirect(`/urls/:id`);
+});
+
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
