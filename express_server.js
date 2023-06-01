@@ -1,10 +1,16 @@
 const express = require('express');
+const morgan = require('morgan');
+
+// constants
 const app = express();
 const PORT = 8080; // default port 8080
 const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+// configuration
 app.set("view engine", "ejs");
 
+// middleware
+app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 
 function generateRandomString() {
@@ -90,6 +96,13 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[req.params.id] = newURL;
 
   res.redirect(`/urls/${req.params.id}`);
+});
+
+// CREATE: login
+app.post("/login", (req, res) => {
+  const username = req.body.username;
+  res.cookie("user", username);
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
