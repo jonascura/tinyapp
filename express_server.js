@@ -68,7 +68,7 @@ app.post("/urls", (req, res) => {
   const newStr = generateRandomString();
   urlDatabase[newStr] = newURL;
 
-  res.redirect(`/urls/:id`);
+  res.redirect(`/urls/${req.params.id}`);
 });
 
 // DELETE: url entry
@@ -79,6 +79,16 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // EDIT: url entry
 app.post("/urls/:id/edit", (req, res) => {
+  res.redirect(`/urls/${req.params.id}`);
+});
+
+// UPDATE: url entry
+app.post("/urls/:id", (req, res) => {
+  const body = req.body;
+  console.log(body); // Log the POST request body to the console
+  const newURL = body.longURL;
+  urlDatabase[req.params.id] = newURL;
+
   res.redirect(`/urls/${req.params.id}`);
 });
 
