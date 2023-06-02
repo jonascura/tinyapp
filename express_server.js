@@ -49,7 +49,6 @@ const getUserByEmail = function(email) {
   let isFound = null;
   for (const userId in users) {
     const user = users[userId];
-    console.log(user.info)
     if (user.email === email) {
       // already exists
       isFound = user;
@@ -138,37 +137,33 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
+// CREATE: log in page
+app.get("/login", (req, res) => {
+  res.render('login');
+});
+
+// Handle Log In button in /urls
+app.post("/linkToLogin", (req, res) => {
+  res.redirect("/login");
+})
 ////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE: login 
 app.post("/login", (req, res) => {
-  const id = req.body.user_id; // abc
-  console.log("req.body:", req.body); // user:abc
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = getUserByEmail(email);
 
-  ;
-
-  let foundUser = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.id === id) {
-      // user found
-      foundUser = user;
-    }
-  }
-
-  if (!foundUser) {
+  if (!user) {
     return res.status(400).send("no user with that name found");
-  } else {
-    res.cookie("user_id", users[id]);
-  }
-  console.log(req.cookies);
+  } 
 
-    /* login logic
-  // lookup user
-  
-  if (foundUser. password !== password) {
+  if (user.password !== password) {
     return res.status(400).send("passwords do not match");
   }
-  */
+
+  res.cookie("user_id", user);
+  console.log(req.cookies);
+  
   res.redirect("/urls");
 });
 
@@ -185,13 +180,18 @@ app.get("/register", (req, res) => {
   res.render('register');
 });
 
+// Handle register button in /urls
+app.post("/linkToReg", (req, res) => {
+  res.redirect("/register");
+});
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 //SAVE: registration
 app.post("/register", (req, res) => {
   // grab info from body
   const email = req.body.email;
   const password = req.body.password;
-  // console.log(`email: ${email} password: ${password}`)
+  const user = getUserByEmail(email);
 
   if (!email || !password) {
     return res.status(400). send("you must provide a username and password");
@@ -201,7 +201,7 @@ app.post("/register", (req, res) => {
   // console.log(req.body);
 
   // look for existing email
-  if (!getUserByEmail(email)) {
+  if (!user) {
     const id = {
       id: generateRandomString()
     };
