@@ -34,8 +34,8 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// string function for urlDatabase
-function generateRandomString() {
+// functions
+const generateRandomString = function() {
   let result = '';
   const length = 6;
   for (let i = 0; i < length; i++) {
@@ -44,6 +44,19 @@ function generateRandomString() {
   }
   return result;
 };
+
+const getUserByEmail = function(email) {
+  let isFound = null;
+  for (const userId in users) {
+    const user = users[userId];
+    console.log(user.info)
+    if (user.email === email) {
+      // already exists
+      isFound = user;
+    }
+  }
+  return isFound;
+}
 
 // CREATE: urls page
 app.get("/urls", (req, res) => {
@@ -125,15 +138,18 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE: login 
 app.post("/login", (req, res) => {
-  const user_id = req.body.user_id; // abc
+  const id = req.body.user_id; // abc
   console.log("req.body:", req.body); // user:abc
+
+  ;
+
   let foundUser = null;
   for (const userId in users) {
     const user = users[userId];
-    if (user.id === user_id) {
+    if (user.id === id) {
       // user found
       foundUser = user;
     }
@@ -142,7 +158,7 @@ app.post("/login", (req, res) => {
   if (!foundUser) {
     return res.status(400).send("no user with that name found");
   } else {
-    res.cookie("user_id", users[user_id]);
+    res.cookie("user_id", users[id]);
   }
   console.log(req.cookies);
 
@@ -156,7 +172,7 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
 // DELETE: logout
 app.post("/logout", (req, res) => {
   const user_id = req.body.user;
@@ -169,6 +185,7 @@ app.get("/register", (req, res) => {
   res.render('register');
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 //SAVE: registration
 app.post("/register", (req, res) => {
   // grab info from body
@@ -180,20 +197,11 @@ app.post("/register", (req, res) => {
     return res.status(400). send("you must provide a username and password");
   }
 
-  // look for existing email
-  let foundUser = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.email === email) {
-      // email already exists
-      foundUser = user;
-    }
-  }
-
   console.log("before users", users);
   // console.log(req.body);
-  
-  if (!foundUser) {
+
+  // look for existing email
+  if (!getUserByEmail(email)) {
     const id = {
       id: generateRandomString()
     };
