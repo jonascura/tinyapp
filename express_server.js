@@ -49,7 +49,7 @@ function generateRandomString() {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_index", templateVars);
 });
@@ -57,7 +57,7 @@ app.get("/urls", (req, res) => {
 // CREATE: new page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
@@ -67,7 +67,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_show", templateVars);
 });
@@ -125,14 +125,15 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
-// SAVE: login
+/////////////////////////////////////////////////////////////////////////////
+// SAVE: login 
 app.post("/login", (req, res) => {
-  console.log(req.body);
-  const id = req.body.username;
+  const user_id = req.body.user_id; // abc
+  console.log("req.body:", req.body); // user:abc
   let foundUser = null;
   for (const userId in users) {
     const user = users[userId];
-    if (user.id === id) {
+    if (user.id === user_id) {
       // user found
       foundUser = user;
     }
@@ -141,16 +142,25 @@ app.post("/login", (req, res) => {
   if (!foundUser) {
     return res.status(400).send("no user with that name found");
   } else {
-    res.cookie("username", id)
+    res.cookie("user_id", users[user_id]);
   }
   console.log(req.cookies);
+
+    /* login logic
+  // lookup user
+  
+  if (foundUser. password !== password) {
+    return res.status(400).send("passwords do not match");
+  }
+  */
   res.redirect("/urls");
 });
 
-// DELETE: login (logout)
+/////////////////////////////////////////////////////////////////////////////
+// DELETE: logout
 app.post("/logout", (req, res) => {
-  const username = req.body.username;
-  res.clearCookie('username', username);
+  const user_id = req.body.user;
+  res.clearCookie('user_id', user_id);
   res.redirect("/urls");
 });
 
@@ -179,8 +189,9 @@ app.post("/register", (req, res) => {
       foundUser = user;
     }
   }
-  console.log("before users", users)
-  console.log(req.body)
+
+  console.log("before users", users);
+  // console.log(req.body);
   
   if (!foundUser) {
     const id = {
@@ -189,24 +200,15 @@ app.post("/register", (req, res) => {
     users[id.id] = id;
     users[id.id].email = email;
     users[id.id].password = password;
-    res.cookie("username", id.id);
+    res.cookie("user_id", users[id.id]);
+    console.log(req.cookies);
   } else {
     return res.status(400).send("email already registered");
   }
 
-  console.log("after users", users)
+  console.log("after users", users);
 
-  
   res.redirect('/urls');
-
-  /* login logic
-  // lookup user
-  
-
-  if (foundUser. password !== password) {
-    return res.status(400).send("passwords do not match");
-  }
-  */
 });
 
 app.listen(PORT, () => {
