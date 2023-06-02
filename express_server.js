@@ -172,7 +172,7 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   const user_id = req.body.user;
   res.clearCookie('user_id', user_id);
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 // CREATE: register page
