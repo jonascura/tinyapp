@@ -125,6 +125,16 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+// CREATE: register page
+app.get("/register", (req, res) => {
+  res.render('register');
+});
+
+//SAVE: registration
+app.post("/register", (req, res) => {
+  res.redirect("/urls");
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
