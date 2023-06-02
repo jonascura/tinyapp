@@ -27,16 +27,14 @@
       </div>
       </form> 
     <% } else { %>  
-      <form class="form-inline" action="/login" method="POST">
+      <form class="form-inline" action="/linkToReg" method="POST">
+        <div class="form-group mb-2">
+          <button type="submit" class="btn btn-primary">Register</button>
+        </div>
+      </form>
+      <form class="form-inline" action="/linkToLogin" method="POST">
       <div class="form-group mb-2">
-        <input
-          class="form-control"
-          type="text"
-          name="user_id"
-          placeholder="Username"
-          style="width: 300px; margin: 1em"
-        />
-        <button type="submit" class="btn btn-outline-dark">Login</button>
+        <button type="submit" class="btn btn-warning">Log In</button>
       </div>
     </form>
     <!-- end new code -->
