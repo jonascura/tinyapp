@@ -7,6 +7,25 @@ const app = express();
 const PORT = 8080; // default port 8080
 const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
+// data
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
+const users = {
+  abc: {
+    id: "abc",
+    email: "user@example.com",
+    password: "123",
+  },
+  def: {
+    id: "def",
+    email: "user2@example.com",
+    password: "456",
+  },
+};
+
 // configuration
 app.set("view engine", "ejs");
 
@@ -15,7 +34,8 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-function generateRandomString() {
+// functions
+const generateRandomString = function() {
   let result = '';
   const length = 6;
   for (let i = 0; i < length; i++) {
@@ -25,16 +45,23 @@ function generateRandomString() {
   return result;
 };
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
+const getUserByEmail = function(email) {
+  let isFound = null;
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) {
+      // already exists
+      isFound = user;
+    }
+  }
+  return isFound;
+}
 
 // CREATE: urls page
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_index", templateVars);
 });
@@ -42,7 +69,7 @@ app.get("/urls", (req, res) => {
 // CREATE: new page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
@@ -52,7 +79,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id, 
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"]
+    user_id: req.cookies["user_id"]
   };
   res.render("urls_show", templateVars);
 });
@@ -110,19 +137,86 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
-// SAVE: login
+// CREATE: log in page
+app.get("/login", (req, res) => {
+  res.render('login');
+});
+
+// Handle Log In button in /urls
+app.post("/linkToLogin", (req, res) => {
+  res.redirect("/login");
+})
+////////////////////////////////////////////////////////////////////////////////////////////
+// SAVE: login 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie("username", username);
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = getUserByEmail(email);
+
+  if (!user) {
+    return res.status(400).send("no user with that name found");
+  } 
+
+  if (user.password !== password) {
+    return res.status(400).send("passwords do not match");
+  }
+
+  res.cookie("user_id", user);
   console.log(req.cookies);
+  
   res.redirect("/urls");
 });
 
-// DELETE: login (logout)
+////////////////////////////////////////////////////////////////////////////////////////////
+// DELETE: logout
 app.post("/logout", (req, res) => {
-  const username = req.body.username;
-  res.clearCookie('username', username);
-  res.redirect("/urls");
+  const user_id = req.body.user;
+  res.clearCookie('user_id', user_id);
+  res.redirect("/login");
+});
+
+// CREATE: register page
+app.get("/register", (req, res) => {
+  res.render('register');
+});
+
+// Handle register button in /urls
+app.post("/linkToReg", (req, res) => {
+  res.redirect("/register");
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////
+//SAVE: registration
+app.post("/register", (req, res) => {
+  // grab info from body
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = getUserByEmail(email);
+
+  if (!email || !password) {
+    return res.status(400). send("you must provide a username and password");
+  }
+
+  console.log("before users", users);
+  // console.log(req.body);
+
+  // look for existing email
+  if (!user) {
+    const id = {
+      id: generateRandomString()
+    };
+    users[id.id] = id;
+    users[id.id].email = email;
+    users[id.id].password = password;
+    res.cookie("user_id", users[id.id]);
+    console.log(req.cookies);
+  } else {
+    return res.status(400).send("email already registered");
+  }
+
+  console.log("after users", users);
+
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
