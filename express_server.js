@@ -202,13 +202,13 @@ app.post("/register", (req, res) => {
 
   // look for existing email
   if (!user) {
-    const id = {
-      id: generateRandomString()
-    };
-    users[id.id] = id;
-    users[id.id].email = email;
-    users[id.id].password = password;
-    res.cookie("user_id", users[id.id]);
+    const id = generateRandomString();
+    users[id] = {
+      id: id,
+      email: email,
+      password: password
+      }
+    res.cookie("user_id", users[id]);
     console.log(req.cookies);
   } else {
     return res.status(400).send("email already registered");
