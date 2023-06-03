@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const { get } = require('request');
 
 // constants
 const app = express();
@@ -63,18 +64,24 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user_id: req.cookies["user_id"]
   };
+  if (req.cookies["user_id"] === undefined){
+    res.redirect('/login');
+  }
   res.render("urls_index", templateVars);
 });
 
-// CREATE: new page
+// CREATE: new URLs page
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user_id: req.cookies["user_id"]
   };
+  if (req.cookies["user_id"] === undefined){
+    res.redirect('/login');
+  }
   res.render("urls_new", templateVars);
 });
 
-// CREATE: individual id page
+// CREATE: shortened URL page
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id, 
@@ -84,9 +91,12 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
-// READ: request
+// READ: short URL >> redirect to URL
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
+  if (longURL === undefined) {
+    return res.status(400).send("TinyURL does not exist");
+  }
   res.redirect(longURL);
 });
 
@@ -105,8 +115,12 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// SAVE: create TinyURL
-app.post("/urls", (req, res) => {
+// SAVE: create TinyURL (submit button in Create TinyURL)
+app.post("/urls/new", (req, res) => {
+  // get user if user
+  if (req.cookies['user_id'] === undefined) {
+    return res.status(400).send("you must login or register to create TinyURL");
+  }
   const body = req.body;
   console.log(body); // Log the POST request body to the console
   const newURL = body.longURL;
