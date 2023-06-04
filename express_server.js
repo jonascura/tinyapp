@@ -188,7 +188,10 @@ app.post("/urls/:id", (req, res) => {
   const body = req.body;
   console.log(body); // Log the POST request body to the console
   const newURL = body.longURL;
-  urlDatabase[req.params.id] = newURL;
+  urlDatabase[req.params.id] = {
+    longURL: newURL,
+    userID: req.cookies['user_id'].id
+  };
 
   res.redirect(`/urls/${req.params.id}`);
 });
