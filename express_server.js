@@ -10,8 +10,14 @@ const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678
 
 // data
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "abc",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "abc",
+  },
 };
 
 const users = {
@@ -60,13 +66,30 @@ const getUserByEmail = function(email) {
 
 // CREATE: urls page
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user_id: req.cookies["user_id"]
-  };
+  // determine if user
+  const urls = {};
   if (req.cookies["user_id"] === undefined){
     res.redirect('/login');
   }
+
+  const userID = req.cookies["user_id"].id;
+  
+  // grab url
+  for (key of Object.keys(urlDatabase)) {
+    let url = urlDatabase[key];
+    // check if url belongs to user
+    if (url.userID === userID) {
+      console.log("IDs match!", url.userID, req.cookies["user_id"])
+      const longURL = url.longURL
+      urls[key] = longURL
+    }
+  };
+
+  const templateVars = {
+    urls: urls,
+    user_id: req.cookies["user_id"]
+  };
+  
   res.render("urls_index", templateVars);
 });
 
