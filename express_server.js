@@ -176,6 +176,24 @@ app.post("/urls/new", (req, res) => {
 
 // DELETE: url entry
 app.post("/urls/:id/delete", (req, res) => {
+  
+  // check user if user
+  if (req.cookies['user_id'] === undefined) {
+    return res.status(400).send("you must login or register to create TinyURL");
+  }
+
+  let userID = req.cookies["user_id"].id;
+  let url = urlDatabase[req.params.id];
+
+  // check if url belongs to user
+  if (userID !== url.userID) {
+    return res.status(400).send("TinyURL does not belong to you");
+  }
+
+  if (url.longURL === undefined) {
+    return res.status(400).send("TinyURL does not exist");
+  }
+
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
