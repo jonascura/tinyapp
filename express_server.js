@@ -94,12 +94,15 @@ app.get("/urls", (req, res) => {
 
 // CREATE: new URLs page
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user_id: req.cookies["user_id"]
-  };
+  // check if user
   if (req.cookies["user_id"] === undefined) {
     res.redirect('/login');
   }
+
+  const templateVars = {
+    user_id: req.cookies["user_id"]
+  };
+  
   res.render("urls_new", templateVars);
 });
 
@@ -152,15 +155,19 @@ app.get("/hello", (req, res) => {
 
 // SAVE: create TinyURL (submit button in Create TinyURL)
 app.post("/urls/new", (req, res) => {
-  // get user if user
+  // check user if user
   if (req.cookies['user_id'] === undefined) {
     return res.status(400).send("you must login or register to create TinyURL");
   }
+
   const body = req.body;
   console.log(body); // Log the POST request body to the console
   const newURL = body.longURL;
   const newStr = generateRandomString();
-  urlDatabase[newStr] = newURL;
+  urlDatabase[newStr] = {
+    longURL: newURL,
+    userID: req.cookies['user_id'].id
+  };
 
   res.redirect(`/urls/${newStr}`);
 });
