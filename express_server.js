@@ -118,13 +118,15 @@ app.get("/urls/:id", (req, res) => {
 
   // check if url belongs to user
   let templateVars = {};
-  if (userID = url.userID) {
-    templateVars = {
-      id:req.params.id,
-      longURL: url.longURL,
-      user_id: req.cookies["user_id"]
-    };
+  if (userID !== url.userID) {
+    return res.status(400).send("TinyURL does not belong to you");
   }
+
+  templateVars = {
+    id:req.params.id,
+    longURL: url.longURL,
+    user_id: req.cookies["user_id"]
+  };
 
   res.render("urls_show", templateVars);
 });
