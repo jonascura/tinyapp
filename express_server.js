@@ -1,12 +1,11 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const { get } = require('request');
 
 // constants
 const app = express();
 const PORT = 8080; // default port 8080
-const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 // data
 const urlDatabase = {
@@ -62,13 +61,13 @@ const getUserByEmail = function(email) {
     }
   }
   return isFound;
-}
+};
 
 // CREATE: urls page
 app.get("/urls", (req, res) => {
   // determine if user
   const urls = {};
-  if (req.cookies["user_id"] === undefined){
+  if (req.cookies["user_id"] === undefined) {
     res.redirect('/login');
   }
 
@@ -79,11 +78,11 @@ app.get("/urls", (req, res) => {
     let url = urlDatabase[key];
     // check if url belongs to user
     if (url.userID === userID) {
-      console.log("IDs match!", url.userID, req.cookies["user_id"])
-      const longURL = url.longURL
-      urls[key] = longURL
+      console.log("IDs match!", url.userID, req.cookies["user_id"]);
+      const longURL = url.longURL;
+      urls[key] = longURL;
     }
-  };
+  }
 
   const templateVars = {
     urls: urls,
@@ -98,7 +97,7 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user_id: req.cookies["user_id"]
   };
-  if (req.cookies["user_id"] === undefined){
+  if (req.cookies["user_id"] === undefined) {
     res.redirect('/login');
   }
   res.render("urls_new", templateVars);
@@ -106,17 +105,30 @@ app.get("/urls/new", (req, res) => {
 
 // CREATE: shortened URL page
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {
-    id: req.params.id, 
-    longURL: urlDatabase[req.params.id],
-    user_id: req.cookies["user_id"]
-  };
+  // check if user
+  if (req.cookies["user_id"] === undefined) {
+    res.redirect('/login');
+  }
+
+  let userID = req.cookies["user_id"].id;
+  let url = urlDatabase[req.params.id];
+
+  // check if url belongs to user
+  let templateVars = {};
+  if (userID = url.userID) {
+    templateVars = {
+      id:req.params.id,
+      longURL: url.longURL,
+      user_id: req.cookies["user_id"]
+    };
+  }
+
   res.render("urls_show", templateVars);
 });
 
 // READ: short URL >> redirect to URL
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   if (longURL === undefined) {
     return res.status(400).send("TinyURL does not exist");
   }
@@ -182,9 +194,9 @@ app.get("/login", (req, res) => {
 // Handle Log In button in /urls
 app.post("/linkToLogin", (req, res) => {
   res.redirect("/login");
-})
+});
 ////////////////////////////////////////////////////////////////////////////////////////////
-// SAVE: login 
+// SAVE: login
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -192,7 +204,7 @@ app.post("/login", (req, res) => {
 
   if (!user) {
     return res.status(400).send("no user with that name found");
-  } 
+  }
 
   if (user.password !== password) {
     return res.status(400).send("passwords do not match");
@@ -244,7 +256,7 @@ app.post("/register", (req, res) => {
       id: id,
       email: email,
       password: password
-      }
+    };
     res.cookie("user_id", users[id]);
     console.log(req.cookies);
   } else {
