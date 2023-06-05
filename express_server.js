@@ -1,6 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+const salt = bcrypt.genSaltSync(10);
 
 // constants
 const app = express();
@@ -23,12 +25,12 @@ const users = {
   abc: {
     id: "abc",
     email: "user@example.com",
-    password: "123",
+    password: "$2a$10$qdrhL7wJNX/UWzL1pT5UeOHGCvKrdJHpdDG9bVOR3/6FngIUxNVjK", //123
   },
   def: {
     id: "def",
     email: "user2@example.com",
-    password: "456",
+    password: "$2a$10$5.y8C5kcw3JEx2IvPgbdxOtcwc2uIjnHyP52xbSFqnp6zwR.8fYJO", //456
   },
 };
 
@@ -37,8 +39,8 @@ app.set("view engine", "ejs");
 
 // middleware
 app.use(morgan('dev'));
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(express.urlencoded({ extended: true })); // populates req.body
+app.use(cookieParser()); // populates req.cookies
 
 // functions
 const generateRandomString = function() {
@@ -76,7 +78,9 @@ const urlsForUser = function(id) {
   return urls;
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: urls page
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls", (req, res) => {
   // determine if user
   if (req.cookies["user_id"] === undefined) {
@@ -93,7 +97,9 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: new URLs page
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls/new", (req, res) => {
   // check if user
   if (req.cookies["user_id"] === undefined) {
@@ -107,7 +113,9 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: shortened URL page
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls/:id", (req, res) => {
   // check if user
   if (req.cookies["user_id"] === undefined) {
@@ -132,7 +140,9 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // READ: short URL >> redirect to URL
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   if (longURL === undefined) {
@@ -141,7 +151,9 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: homepage
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -156,7 +168,9 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE: create TinyURL (submit button in Create TinyURL)
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/new", (req, res) => {
   // check user if user
   if (req.cookies['user_id'] === undefined) {
@@ -175,7 +189,9 @@ app.post("/urls/new", (req, res) => {
   res.redirect(`/urls/${newStr}`);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // DELETE: url entry
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/:id/delete", (req, res) => {
   
   // check user if user
@@ -199,12 +215,16 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // EDIT: url entry
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/:id/edit", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // UPDATE: url entry
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/:id", (req, res) => {
   const body = req.body;
   console.log(body); // Log the POST request body to the console
@@ -217,17 +237,23 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${req.params.id}`);
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: log in page
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/login", (req, res) => {
   res.render('login');
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // Handle Log In button in /urls
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/linkToLogin", (req, res) => {
   res.redirect("/login");
 });
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 // SAVE: login
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -237,7 +263,7 @@ app.post("/login", (req, res) => {
     return res.status(400).send("no user with that name found");
   }
 
-  if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     return res.status(400).send("passwords do not match");
   }
 
@@ -249,13 +275,16 @@ app.post("/login", (req, res) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // DELETE: logout
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/logout", (req, res) => {
   const user_id = req.body.user;
   res.clearCookie('user_id', user_id);
   res.redirect("/login");
 });
 
+////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: register page
+////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/register", (req, res) => {
   res.render('register');
 });
@@ -267,18 +296,20 @@ app.post("/linkToReg", (req, res) => {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //SAVE: registration
+////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/register", (req, res) => {
   // grab info from body
   const email = req.body.email;
   const password = req.body.password;
   const user = getUserByEmail(email);
 
+  // handle required fields
   if (!email || !password) {
     return res.status(400). send("you must provide a username and password");
   }
 
-  console.log("before users", users);
-  // console.log(req.body);
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
 
   // look for existing email
   if (!user) {
@@ -286,7 +317,7 @@ app.post("/register", (req, res) => {
     users[id] = {
       id: id,
       email: email,
-      password: password
+      password: hash
     };
     res.cookie("user_id", users[id]);
     console.log(req.cookies);
@@ -294,11 +325,10 @@ app.post("/register", (req, res) => {
     return res.status(400).send("email already registered");
   }
 
-  console.log("after users", users);
-
   res.redirect('/urls');
 });
 
+// listener
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
 });
