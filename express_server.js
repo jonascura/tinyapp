@@ -93,12 +93,13 @@ app.use(cookieSession({
 // CREATE: urls page
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls", (req, res) => {
-  const userID = req.session.user_id.id;
   // determine if user
-  if (userID === undefined) {
+  if (req.session.user_id === undefined) {
     res.redirect('/login');
   }
-
+  
+  const userID = req.session.user_id.id;
+  
   const templateVars = {
     urls: urlsForUser(userID),
     user_id: req.session.user_id
