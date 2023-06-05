@@ -94,7 +94,7 @@ app.use(cookieSession({
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls", (req, res) => {
   // determine if user
-  if (req.session.user_id === undefined) {
+  if (!req.session.user_id) {
     res.redirect('/login');
   }
   
@@ -113,7 +113,7 @@ app.get("/urls", (req, res) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls/new", (req, res) => {
   // check if user
-  if (req.session.user_id === undefined) {
+  if (!req.session.user_id) {
     res.redirect('/login');
   }
 
@@ -129,37 +129,70 @@ app.get("/urls/new", (req, res) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls/:id", (req, res) => {
   // check if user
-  if (req.session.user_id === undefined) {
-    res.redirect('/login');
+  if (!req.session.user_id) {
+    return res.status(400).send("You must login");
   }
 
-  let userID = req.session.user_id.id;
-  let url = urlDatabase[req.params.id];
+  let user = getUserByEmail(req.session.user_id.email, users);
+  let urls = urlsForUser(user.id);
+  let urlToCheck = urlDatabase[req.params.id];
+
+  // check if url exists
+  if (urlToCheck === undefined) {
+    return res.status(400).send("URL does not exist");
+  }
 
   // check if url belongs to user
   let templateVars = {};
-  if (userID !== url.userID) {
-    return res.status(400).send("TinyURL does not belong to you");
+  let doesBelong = null;
+  for (let url in urls) {
+    if (urlToCheck.longURL === urls[url]) {
+      templateVars = {
+        id:req.params.id,
+        longURL: url.longURL,
+        user_id: user.id
+      };
+      doesBelong = true;
+    }
   }
 
-  templateVars = {
-    id:req.params.id,
-    longURL: url.longURL,
-    user_id: req.session.user_id
-  };
-
+  if (!doesBelong) {
+    return res.status(400).send("There is no existing URL in library");
+  }
   res.render("urls_show", templateVars);
+
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // READ: short URL >> redirect to URL
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id].longURL;
-  if (longURL === undefined) {
-    return res.status(400).send("TinyURL does not exist");
+  if (!req.session.user_id) {
+    return res.status(400).send("You must login");
   }
-  res.redirect(longURL);
+
+  let user = getUserByEmail(req.session.user_id.email, users);
+  let urls = urlsForUser(user.id);
+  let urlToCheck = urlDatabase[req.params.id];
+
+  // check if url exists
+  if (urlToCheck === undefined) {
+    return res.status(400).send("URL does not exist");
+  }
+
+  let doesBelong = null;
+  for (let url in urls) {
+    console.log(urls[url]);
+    if (urlToCheck.longURL === urls[url]) {
+      doesBelong = true;
+    }
+  }
+  
+  if (!doesBelong) {
+    return res.status(400).send("There is no existing URL in library");
+  }
+  res.redirect(urlToCheck.longURL);
+
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -184,12 +217,12 @@ app.get("/hello", (req, res) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/new", (req, res) => {
   // check user if user
-  if (req.session.user_id === undefined) {
+  if (!req.session.user_id) {
     return res.status(400).send("you must login or register to create TinyURL");
   }
 
   const body = req.body;
-  console.log(body); // Log the POST request body to the console
+  console.log("body is:", body); // Log the POST request body to the console
   const newURL = body.longURL;
   const newStr = generateRandomString();
   urlDatabase[newStr] = {
@@ -206,7 +239,7 @@ app.post("/urls/new", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   
   // check user if user
-  if (req.session.user_id === undefined) {
+  if (!req.session.user_id) {
     return res.status(400).send("you must login or register to create TinyURL");
   }
 
@@ -238,7 +271,7 @@ app.post("/urls/:id/edit", (req, res) => {
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/urls/:id", (req, res) => {
   const body = req.body;
-  console.log(body); // Log the POST request body to the console
+  console.log("body is:", body); // Log the POST request body to the console
   const newURL = body.longURL;
   urlDatabase[req.params.id] = {
     longURL: newURL,
