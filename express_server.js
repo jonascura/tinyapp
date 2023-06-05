@@ -63,7 +63,7 @@ const getUserByEmail = function(email, users) {
 const urlsForUser = function(id) {
   const urls = {};
   
-  for (key of Object.keys(urlDatabase)) {
+  for (let key of Object.keys(urlDatabase)) {
     let url = urlDatabase[key];
     if (url.userID === id) {
       const longURL = url.longURL;
@@ -83,7 +83,7 @@ app.use(cookieSession({
     generateRandomString(),
     generateRandomString(),
     generateRandomString()
-], // doesn't matter what this is
+  ], // doesn't matter what this is
 
   // Cookie options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -287,8 +287,6 @@ app.post("/login", (req, res) => {
 // DELETE: logout
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/logout", (req, res) => {
-  const user_id = req.body.user;
-  // res.clearCookie('user_id', user_id);
   req.session.user_id = null;
   res.redirect("/login");
 });
@@ -332,7 +330,7 @@ app.post("/register", (req, res) => {
     };
     req.session.user_id = users[id];
     res.redirect('/urls');
-  }  
+  }
   return res.status(400).send("email already registered");
 });
 
