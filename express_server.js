@@ -48,7 +48,7 @@ const generateRandomString = function() {
   return result;
 };
 
-const getUserByEmail = function(email) {
+const getUserByEmail = function(email, users) {
   let isFound = null;
   for (const userId in users) {
     const user = users[userId];
@@ -93,12 +93,11 @@ app.use(cookieSession({
 // CREATE: urls page
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/urls", (req, res) => {
+  const userID = req.session.user_id.id;
   // determine if user
-  if (req.session.user_id === undefined) {
+  if (userID === undefined) {
     res.redirect('/login');
   }
-
-  const userID = req.session.user_id.id;
 
   const templateVars = {
     urls: urlsForUser(userID),
@@ -268,7 +267,7 @@ app.post("/linkToLogin", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
 
   if (!user) {
     return res.status(400).send("no user with that name found");
@@ -279,7 +278,6 @@ app.post("/login", (req, res) => {
   }
 
   req.session.user_id = user;
-  //res.cookie("user_id", user);
   console.log(req.session);
   
   res.redirect("/urls");
@@ -314,7 +312,7 @@ app.post("/register", (req, res) => {
   // grab info from body
   const email = req.body.email;
   const password = req.body.password;
-  const user = getUserByEmail(email);
+  const user = getUserByEmail(email, users);
 
   // handle required fields
   if (!email || !password) {
@@ -333,13 +331,9 @@ app.post("/register", (req, res) => {
       password: hash
     };
     req.session.user_id = users[id];
-    //res.cookie("user_id", users[id]);
-    //console.log(req.cookies);
-  } else {
-    return res.status(400).send("email already registered");
-  }
-
-  res.redirect('/urls');
+    res.redirect('/urls');
+  }  
+  return res.status(400).send("email already registered");
 });
 
 // listener
