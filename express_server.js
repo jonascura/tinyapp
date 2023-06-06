@@ -6,72 +6,23 @@ const bcrypt = require('bcryptjs');
 // constants
 const app = express();
 const PORT = 8080; // default port 8080
-const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
 // data
-const urlDatabase = {
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "abc",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "abc",
-  },
-};
-
-const users = {
-  abc: {
-    id: "abc",
-    email: "user@example.com",
-    password: "$2a$10$qdrhL7wJNX/UWzL1pT5UeOHGCvKrdJHpdDG9bVOR3/6FngIUxNVjK", //123
-  },
-  def: {
-    id: "def",
-    email: "user2@example.com",
-    password: "$2a$10$5.y8C5kcw3JEx2IvPgbdxOtcwc2uIjnHyP52xbSFqnp6zwR.8fYJO", //456
-  },
-};
+const {
+  urlDatabase,
+  users
+} = require('./databases.js');
 
 // configuration
 app.set("view engine", "ejs");
 
 
 // functions
-const generateRandomString = function() {
-  let result = '';
-  const length = 6;
-  for (let i = 0; i < length; i++) {
-    // code referenced from https://www.programiz.com/javascript/examples/generate-random-strings
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
-
-const getUserByEmail = function(email, users) {
-  let isFound = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.email === email) {
-      // already exists
-      isFound = user;
-    }
-  }
-  return isFound;
-};
-
-const urlsForUser = function(id) {
-  const urls = {};
-  
-  for (let key of Object.keys(urlDatabase)) {
-    let url = urlDatabase[key];
-    if (url.userID === id) {
-      const longURL = url.longURL;
-      urls[key] = longURL;
-    }
-  }
-  return urls;
-};
+const {
+  generateRandomString,
+  getUserByEmail,
+  urlsForUser
+ } = require('./helpers.js');
 
 // middleware
 app.use(morgan('dev'));
