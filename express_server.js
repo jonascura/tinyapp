@@ -121,35 +121,20 @@ app.get("/urls/:id", (req, res) => {
 // READ: short URL >> redirect to URL
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/u/:id", (req, res) => {
-  let user = getUserByEmail(req.session.user_id.email, users);
-  let urls = urlsForUser(user.id);
   let urlToCheck = urlDatabase[req.params.id];
-
   // check if url exists
   if (urlToCheck === undefined) {
     return res.status(400).send("URL does not exist");
   }
 
-  let doesBelong = null;
-  for (let url in urls) {
-    console.log(urls[url]);
-    if (urlToCheck.longURL === urls[url]) {
-      doesBelong = true;
-    }
-  }
-  
-  if (!doesBelong) {
-    return res.status(400).send("There is no existing URL in library");
-  }
   res.redirect(urlToCheck.longURL);
-
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // CREATE: homepage
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/login');
 });
 
 // CREATE: show urls as json string
