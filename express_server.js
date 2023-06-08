@@ -101,7 +101,7 @@ app.get("/urls/:id", (req, res) => {
       templateVars = {
         id:req.params.id,
         longURL: url.longURL,
-        user_id: user.id
+        user_id: req.session.user_id.id
       };
       doesBelong = true;
     }
@@ -118,10 +118,6 @@ app.get("/urls/:id", (req, res) => {
 // READ: short URL >> redirect to URL
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/u/:id", (req, res) => {
-  if (!req.session.user_id) {
-    return res.status(400).send("You must login");
-  }
-
   let user = getUserByEmail(req.session.user_id.email, users);
   let urls = urlsForUser(user.id);
   let urlToCheck = urlDatabase[req.params.id];
@@ -229,7 +225,7 @@ app.post("/urls/:id", (req, res) => {
     userID: req.session.user_id.id
   };
 
-  res.redirect(`/urls/${req.params.id}`);
+  res.redirect(`/urls`);
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +268,7 @@ app.post("/login", (req, res) => {
 // DELETE: logout
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.post("/logout", (req, res) => {
-  req.session.user_id = null;
+  req.session = null;
   res.redirect("/login");
 });
 
