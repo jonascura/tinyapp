@@ -83,6 +83,7 @@ app.get("/urls/:id", (req, res) => {
   if (!req.session.user_id) {
     return res.status(400).send("You must login");
   }
+  console.log(req.params)
 
   let user = getUserByEmail(req.session.user_id.email, users);
   let urls = urlsForUser(user.id);
@@ -98,15 +99,17 @@ app.get("/urls/:id", (req, res) => {
   let doesBelong = null;
   for (let url in urls) {
     if (urlToCheck.longURL === urls[url]) {
+      console.log("urltocheck is:", urlToCheck)
+      console.log("urls[url]:", urls[url])
       templateVars = {
-        id:req.params.id,
-        longURL: url.longURL,
+        id:req.params.id, // url ID
+        longURL: urls[url],
         user_id: req.session.user_id.id
       };
       doesBelong = true;
     }
   }
-
+  console.log(templateVars)
   if (!doesBelong) {
     return res.status(400).send("There is no existing URL in library");
   }
