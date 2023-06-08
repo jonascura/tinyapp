@@ -104,7 +104,7 @@ app.get("/urls/:id", (req, res) => {
       templateVars = {
         id:req.params.id, // url ID
         longURL: urls[url],
-        user_id: req.session.user_id.id
+        user_id: req.session.user_id
       };
       doesBelong = true;
     }
