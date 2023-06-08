@@ -235,7 +235,10 @@ app.post("/urls/:id", (req, res) => {
 // CREATE: log in page
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/login", (req, res) => {
-  res.render('login');
+  const templateVars = {
+    user_id: req.session.user_id
+  };
+  res.render('login', templateVars);
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -279,7 +282,10 @@ app.post("/logout", (req, res) => {
 // CREATE: register page
 ////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/register", (req, res) => {
-  res.render('register');
+  const templateVars = {
+    user_id: req.session.user_id
+  };
+  res.render('register', templateVars);
 });
 
 // Handle register button in /urls

@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta
+  <head>
+    <meta charset="utf-8" />
+    <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-  <title>Document</title>
-</head>
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+      integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+      crossorigin="anonymous"
+    />
+    <title>TinyApp</title>
+  </head>
+  <%- include('partials/_header') %>
 <body>
   <main style="margin: 1em;">
     <h3>Register</h3>
-    <form class="form-inline" action="/register" method="POST">
+    <form class="form-column" action="/register" method="POST">
       <div class="form-group mb-2">
         <label for="email">Email</label><br>
         <input
