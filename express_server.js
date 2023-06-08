@@ -52,7 +52,7 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id.id;
   
   const templateVars = {
-    urls: urlsForUser(userID),
+    urls: urlsForUser(userID, urlDatabase),
     user_id: req.session.user_id
   };
   
@@ -86,7 +86,7 @@ app.get("/urls/:id", (req, res) => {
   console.log(req.params)
 
   let user = getUserByEmail(req.session.user_id.email, users);
-  let urls = urlsForUser(user.id);
+  let urls = urlsForUser(user.id, urlDatabase);
   let urlToCheck = urlDatabase[req.params.id];
 
   // check if url exists

@@ -1,5 +1,4 @@
 const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-const { urlDatabase } = require('./databases.js');
 
 const generateRandomString = function() {
   let result = '';
@@ -23,7 +22,7 @@ const getUserByEmail = function(email, users) {
   return isFound;
 };
 
-const urlsForUser = function(id) {
+const urlsForUser = function(id, urlDatabase) {
   const urls = {};
   
   for (let key of Object.keys(urlDatabase)) {
